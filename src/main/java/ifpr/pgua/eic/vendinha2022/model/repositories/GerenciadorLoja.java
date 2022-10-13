@@ -49,7 +49,7 @@ public class GerenciadorLoja {
         clientes.add(new Cliente("Zé", "000.111.222.333-44", "ze@teste.com", "123-4567"));
         clientes.add(new Cliente("Maria", "111.111.222.333-44", "maria@teste.com", "123-4567"));
         clientes.add(new Cliente("Chico", "222.111.222.333-44", "chico@teste.com", "123-4567"));
-        
+        produtos.add(new Produto("null", "null", 0, 0));
     }
 
 
