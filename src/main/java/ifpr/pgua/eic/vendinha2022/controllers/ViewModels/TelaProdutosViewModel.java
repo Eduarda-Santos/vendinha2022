@@ -1,11 +1,16 @@
 package ifpr.pgua.eic.vendinha2022.controllers.ViewModels;
 
+import com.mysql.cj.conf.BooleanProperty;
+
 import ifpr.pgua.eic.vendinha2022.model.entities.Produto;
 import ifpr.pgua.eic.vendinha2022.model.repositories.GerenciadorLoja;
+import ifpr.pgua.eic.vendinha2022.model.repositories.ProdutosRepository;
 import ifpr.pgua.eic.vendinha2022.model.results.Result;
 import ifpr.pgua.eic.vendinha2022.model.results.SuccessResult;
-import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.Observable;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
@@ -18,80 +23,111 @@ public class TelaProdutosViewModel {
     private StringProperty valorProperty = new SimpleStringProperty("0.0");
     private StringProperty quantidadeEstoqueProperty = new SimpleStringProperty("0.0");
 
-    private ObservableList<ProdutoRow> produtos = FXCollections.observableArrayList();
+    
+    private StringProperty operacao = new SimpleStringProperty("Cadastrar");
+    private BooleanProperty podeEditar = new SimpleBooleanProperty(true);
+    private boolean atualizar = false;
 
-    private GerenciadorLoja gerenciador;
+    private ObservableList<ProdutoRow> obsProdutos = FXCollections.observableArrayList();
 
-    public TelaProdutosViewModel(GerenciadorLoja gerenciador){
-        this.gerenciador = gerenciador;
+    private ObjectProperty<ProdutoRow> selecionado = new SimpleObjectProperty<>();
+
+    private ObjectProperty<Result> alertProperty = new SimpleObjectProperty<>();
+
+    private ProdutosRepository repository;
+
+    public TelaProdutosViewModel(ProdutosRepository repository){
+        this.repository = repository;
 
         updateList();
     }
 
-        /*Atualiza a lista observável de clientes, que por consequência irá
-     * atualizar o conteúdo mostrado pela TableView.
-     */
     private void updateList(){
-        produtos.clear();
-        for(Produto produto:gerenciador.getProdutos()){
-            produtos.add(new ProdutoRow(produto));
+        obsProdutos.clear();
+        for (Produto c : repository.getprodutos()) {
+            obsProdutos.add(new ProdutoRow(c));
         }
-    }
-
-    public StringProperty getNomeProperty() {
-        return nomeProperty;
-    }
-
-    public StringProperty getDescricaoProperty() {
-        return descricaoProperty;
-    }
-
-    public StringProperty getValorProperty() {
-        return valorProperty;
-    }
-
-    public StringProperty getQuantidadeEstoqueProperty() {
-        return quantidadeEstoqueProperty;
     }
 
     public ObservableList<ProdutoRow> getProdutos() {
-        return produtos;
+        return this.obsProdutos;
+    }
+
+    public ObjectProperty<Result> alertProperty() {
+        return alertProperty;
+    }
+
+    public StringProperty operacaoProperty() {
+        return operacao;
+    }
+
+    public BooleanProperty podeEditarProperty() {
+        return podeEditar;
+    }
+
+    public StringProperty nomeProperty() {
+        return this.spNome;
+    }
+
+    public StringProperty descricaoProperty() {
+        return this.spDescricao;
+    }
+
+    public StringProperty valorProperty() {
+        //var double, funcao String
+        return this.spValor;
+    }
+
+    public StringProperty quantidadeEstoqueProperty() {
+        return this.spQuantidade;
+    }
+
+    public ObjectProperty<ProdutoRow> selecionadoProperty() {
+        return selecionado;
     }
 
     
-    public Result adicionar(){
-        
-        String nome = nomeProperty.getValue();
-        String descricao = descricaoProperty.getValue();
-        Double valor = 0.0;
-        Double quantidade = 0.0;
+    public void cadastrar() {
 
-        try{
-            valor = Double.parseDouble(valorProperty.getValue());
-        }catch(NumberFormatException e){
-            return Result.fail("Valor inválido!");
+        // acessa os valores das propriedades, que por consequência
+        // contém os valores digitados nos textfields.
+        String nome = spNome.getValue();
+        String descricao = spDescricao.getValue();
+        Double valor = spValor.getValue();
+        Double quantidadeEstoque = spQuantidade.getValue();
+
+        if (atualizar) {
+            repository.atualizarProduto(nome, descricao, valor, quantidadeEstoque);
+        } else {
+            repository.adicionarProduto(nome, descricao, valor, quantidadeEstoque);
         }
 
-        try{
-            quantidade = Double.parseDouble(quantidadeEstoqueProperty.getValue());
-        }catch(NumberFormatException e){
-            return Result.fail("Quantidade inválida!");
-        }
+        updateList();
+        limpar();
+    }
 
-        Result resultado = gerenciador.adicionarProduto(nome, descricao, valor, quantidade);
-        if(resultado instanceof SuccessResult){
-            limpar();
-            updateList();
-        }
+    public void atualizar() {
+        operacao.setValue("Atualizar");
+        podeEditar.setValue(false);
+        atualizar = true;
+        Produto produto = selecionado.get().getProduto();
+        spNome.setValue(produto.getNome());
+        spDescricao.setValue(produto.getDescricao());
+        spValor.setValue(produto.getValor()());
+        spQuantidade.setValue(produto.getQuantidadeEstoque());
 
-        return resultado;
+        alertProperty.setValue(Result.fail("Teste"));
+
     }
 
     public void limpar(){
-        nomeProperty.setValue("");
-        descricaoProperty.setValue("");
-        valorProperty.setValue("0.0");
-        quantidadeEstoqueProperty.setValue("0.0");
+        spNome.setValue("");
+        spDescricao.setValue("");
+        spValor.setValue("0.0");
+        spQuantidade.setValue("0.0");
+        podeEditar.setValue(true);
+        atualizar = false;
+        operacao.setValue("Cadastrar");
     }
 
 

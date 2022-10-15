@@ -1,7 +1,5 @@
 package ifpr.pgua.eic.vendinha2022.model.entities;
 
-import ifpr.pgua.eic.vendinha2022.model.results.Result;
-
 public class Produto {
     
 
@@ -56,11 +54,15 @@ public class Produto {
     public void setQuantidadeEstoque(double quantidadeEstoque) {
         this.quantidadeEstoque = quantidadeEstoque;
     }
-
+/*
     public Result update(int id) {
         // TODO Auto-generated method stub
         return null;
     }
 
+    public Result update(int id) {
+        return update(id);
+    }
+*/
     
 }

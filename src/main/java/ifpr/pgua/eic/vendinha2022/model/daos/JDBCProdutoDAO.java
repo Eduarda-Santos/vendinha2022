@@ -50,7 +50,7 @@ public class JDBCProdutoDAO implements ProdutoDAO{
 
     @Override
     public Result update(int id, Produto produto) {
-        return produto.update(id);
+        return null;
     }
 
     @Override
